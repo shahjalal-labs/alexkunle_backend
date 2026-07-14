@@ -189,6 +189,7 @@ const setupProfileIntoDB = async (req: Request) => {
     const referrer = await prisma.user.findUnique({
       where: { referralCode: payload.referCode },
     });
+
     if (!referrer) {
       throw new ApiError(404, "Invalid referral code");
     }
