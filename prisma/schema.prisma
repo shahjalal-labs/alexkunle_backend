@@ -1,0 +1,622 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model PendingUser {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  fullName    String
+  email       String   @unique
+  phoneNumber String   @unique
+  countryCode String
+  password    String  
+  createdAt   DateTime @default(now())
+
+  @@map("pending_users")
+}
+
+model User {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  fullName          String
+  email             String             @unique
+  password          String
+  referralCode      String             @unique
+  phoneNumber       String             @unique
+  countryCode       String
+  fcmToken          String?
+  profileImage      String?
+  stripeCustomerId  String?
+  stripeAccountId   String?
+  gender            Gender             @default(Others)
+  address           String?
+  points            Int                @default(0)
+  wallet            Int                @default(0)
+  tokens            Int                @default(0)
+  lastLogin         DateTime?
+  isSetupCompleted       Boolean            @default(false)
+  canTransfer       Boolean?           @default(true)
+  role              UserRole           @default(Buyer)
+  status            UserStatus         @default(Active)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  businesses        Business[]
+  referrer          UsedReferral[]     @relation("Referrer")
+  referee           UsedReferral[]     @relation("Referee")
+  notifications     Notification[]
+  products          Product[]
+  liveStreams       LiveStream[]
+  deliveryAddresses DeliveryAddress[]
+  wishlists         Wishlist[]
+  carts             Cart[]
+  orders            Order[]
+  transactions      Transaction[]
+  reviews           Review[]
+  withdraws         Withdraw[]
+  stocks            Stock[]
+  auctions          Auction[]
+  bids              Bid[]
+  campaigns         Campaign[]
+  tokenTransactions TokenTransaction[]
+  autopilotItems    AutopilotItem[]
+
+  @@map("users")
+}
+
+enum CampaignObjective {
+  BrandAwareness
+  DriveTraffic
+  BoostConversions
+}
+
+enum ListingScope {
+  AllListings
+  SpecificListings
+}
+
+enum CampaignPlacement {
+  HomeFeed
+  SearchResults
+  CategoryPages
+  BrandPages
+}
+
+enum CampaignStatus {
+  Active
+  Paused
+  Completed
+}
+
+model Campaign {
+  id                 String              @id @default(auto()) @map("_id") @db.ObjectId
+  userId             String              @db.ObjectId
+  campaignName       String
+  objective          CampaignObjective
+  totalBudget        Float
+  campaignDuration   Int
+  startDate          DateTime
+  endDate            DateTime
+  dailySpendCap      Float?
+  listingScope       ListingScope        @default(AllListings)
+  categoryId         String?             @db.ObjectId
+  selectedListingIds String[]
+  placements         CampaignPlacement[]
+  status             CampaignStatus      @default(Active)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("campaigns")
+}
+
+enum UserStatus {
+  Active
+  Blocked
+  Deleted
+}
+
+enum UserRole {
+  Buyer
+  Brand
+  Admin
+}
+
+enum Gender {
+  Male
+  Female
+  Others
+}
+
+model Business {
+  id           String         @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId      String         @unique @db.ObjectId
+  businessName String
+  NIDFront     String
+  NIDBack      String
+  tradeLicense String
+  status       BusinessStatus @default(Pending)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  user         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products     Product[]
+
+  @@map("businesses")
+}
+
+enum BusinessStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+model Otp {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  otp       String
+  expiresAt DateTime
+
+  @@map("otps")
+}
+
+model UsedReferral {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  referrerId String   @db.ObjectId
+  refereeId  String   @db.ObjectId
+  referCode  String
+  commission Float
+  createdAt  DateTime @default(now())
+  referrer   User     @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  referee    User     @relation("Referee", fields: [refereeId], references: [id], onDelete: Cascade)
+
+  @@map("used_referrals")
+}
+
+model Notification {
+  id         String             @id @default(auto()) @map("_id") @db.ObjectId
+  receiverId String?            @db.ObjectId
+  senderId   String?            @db.ObjectId
+  title      String?
+  content    String
+  type       TNotificationType?
+  isRead     Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  sender     User?              @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+enum TNotificationType {
+  Order
+  Message
+  Event
+  Follow
+}
+
+model Category {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  categoryName String       @unique
+  thumbnail    String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  products     Product[]
+  liveStreams  LiveStream[]
+
+  @@map("categories")
+}
+
+model Product {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String          @db.ObjectId
+  businessId       String          @db.ObjectId
+  productName      String
+  brand            String
+  categoryId       String          @db.ObjectId
+  description      String
+  price            Float
+  totalStock       Int
+  deliveryTimeline String
+  returnPolicy     String?
+  specifications   String?
+  productImages    String[]
+  productVideos    String[]
+  flashDrop        Boolean         @default(false)
+  status           BusinessStatus? @default(Pending)
+  rating           Float           @default(0)
+  reviews          Int             @default(0)
+  youthPrice       Float?
+  investIncrease   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  category         Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  business         Business        @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  variants         Variant[]
+  wishlists        Wishlist[]
+  carts            Cart[]
+  orderItems       OrderItem[]
+  clientReview     Review[]
+  stocks           Stock[]
+  auctions         Auction[]
+  autopilotItems   AutopilotItem[]
+
+  @@map("products")
+}
+
+model Variant {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  productId  String      @db.ObjectId
+  size       String
+  color      String
+  stock      Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+  stocks     Stock[]
+
+  @@map("variants")
+}
+
+model LiveStream {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String    @db.ObjectId
+  liveFor        LiveFor   @default(General)
+  title          String?
+  categoryId     String?   @db.ObjectId
+  productIds     String[]
+  scheduleAt     DateTime?
+  startTime      DateTime?
+  hostLink       String?
+  joinLink       String?
+  isLive         Boolean   @default(false)
+  views          Int       @default(0)
+  streamDuration Int       @default(0) // Duration in seconds
+  createdAt      DateTime  @default(now())
+  isCompleted Boolean @default(false)
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("live_streams")
+}
+
+enum LiveFor {
+  General
+  Schedule
+}
+
+model ChatRoom {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  userIds   String     @unique
+  status    RoomStatus @default(Active)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  messages  Message[]
+
+  @@map("chat_rooms")
+}
+
+enum RoomStatus {
+  Active
+  Blocked
+}
+
+model Message {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String   @db.ObjectId
+  senderId  String   @db.ObjectId
+  content   String?
+  fileUrl   String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chatRoom  ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+model DeliveryAddress {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  fullName      String
+  phoneNumber   String
+  postCode      String
+  houseNo       String
+  street        String
+  city          String
+  country       String
+  toNeighbor    Boolean  @default(false)
+  neighborName  String?
+  neighborPhone String?
+  neighborHouse String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders        Order[]
+
+  @@map("delivery_addresses")
+}
+
+model Wishlist {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("wishlists")
+}
+
+model Cart {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  productId String   @db.ObjectId
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("carts")
+}
+
+model Order {
+  id                    String      @id @default(auto()) @map("_id") @db.ObjectId
+  buyerId               String      @db.ObjectId
+  totalAmount           Float
+  status                OrderStatus @default(Pending)
+  stripePaymentIntentId String?
+  paymentMethodId       String?
+  orderId               String?
+  shippingAddressId     String      @db.ObjectId
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+
+  buyer           User            @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  deliveryAddress DeliveryAddress @relation(fields: [shippingAddressId], references: [id])
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderId      String      @db.ObjectId
+  productId    String      @db.ObjectId
+  variantId    String      @db.ObjectId
+  quantity     Int
+  cancelReason String?
+  trackingId   String?
+  subtotal     Float
+  isReviewed   Boolean?    @default(false)
+  status       OrderStatus @default(Pending)
+  order        Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant      Variant     @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("orderItems")
+}
+
+model Stock {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String         @db.ObjectId
+  productId     String         @db.ObjectId
+  variantId     String         @db.ObjectId
+  quantity      Int
+  subtotal      Float
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant       Variant        @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  auctions      Auction[]
+  autopilotItem AutopilotItem?
+
+  @@map("stocks")
+}
+
+enum AutopilotStatus {
+  Active
+  Completed
+  Unsold
+}
+
+model AutopilotItem {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String          @db.ObjectId
+  stockId         String          @unique @db.ObjectId
+  productId       String?         @db.ObjectId
+  productName     String
+  quantity        Int
+  buyPrice        Float
+  sellPrice       Float?
+  targetSellPrice Float
+  profit          Float           @default(0)
+  status          AutopilotStatus @default(Active)
+  placedAt        DateTime        @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock   Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("autopilot_items")
+}
+
+model Auction {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  stockId       String        @db.ObjectId
+  productId     String        @db.ObjectId
+  userId        String        @db.ObjectId
+  quantity      Int
+  endTime       DateTime
+  startingBid   Float
+  reservePrice  Float?
+  autopilot     Boolean       @default(false)
+  highestBid    Float         @default(0)
+  isLive        Boolean       @default(true)
+  auctionStatus AuctionStatus @default(Active)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  stock         Stock         @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bids          Bid[]
+
+  @@map("auctions")
+}
+
+enum AuctionStatus {
+  Active
+  Sold
+  Unsold
+  Completed
+}
+
+model Bid {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  auctionId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  amount    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  auction   Auction  @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([auctionId, userId])
+  @@map("bids")
+}
+
+enum OrderStatus {
+  Pending
+  Delivered
+  Active
+  Cancelled
+}
+
+model Transaction {
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String        @db.ObjectId
+  transactionType  TTransactions
+  amount           Float
+  title            String
+  transactionImage String?
+  status           OrderStatus   @default(Pending)
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("transactions")
+}
+
+model PointSetting {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  pointValue   Float?
+  minimumPoint Float?
+  dailyLimit   Float?
+  expDay       Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("pointSettings")
+}
+
+model SpinSetting {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  spinCost     Float?
+  minimumToken Float?
+  dailyLimit   Float?
+  fraud        Boolean?
+    perDollarToken Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("spinSettings")
+}
+
+model Reward {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String?
+  percentage Float?
+  subTitle   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("rewards")
+}
+
+model AffiliateSetting {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  commissionRate Float?
+  referralReward Float?
+  minimumAmount  Float?
+  cookieDuration Float?
+  payoutSchedule String?
+  paymentMethod  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("affiliateSettings")
+}
+
+model TokenTransaction {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String             @db.ObjectId
+  transactionType TTokenTransactions
+  amount          Float?
+  token           Int
+  title           String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tokenTransaction")
+}
+
+model Review {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String      @db.ObjectId
+  productId String      @db.ObjectId
+  rating    Float
+  comment   String
+  status    OrderStatus @default(Pending)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+model Withdraw {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  amount    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("withdraws")
+}
+
+enum TTransactions {
+  Purchase
+  TopUp
+  Withdraw
+}
+
+enum TTokenTransactions {
+  Reward
+  Spin
+  Purchase
+}
