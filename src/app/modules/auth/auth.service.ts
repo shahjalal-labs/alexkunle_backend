@@ -302,8 +302,8 @@ const myProfile = async (userId: string) => {
 
   const returnUser = {
     ...user,
-    isSetupCompleted:
-      user.role === "Buyer" ? buyerProfileCompleted : brandProfileCompleted,
+    isSetupCompleted: buyerProfileCompleted,
+    isBrandProfileCompleted: brandProfileCompleted,
   };
 
   return returnUser;
