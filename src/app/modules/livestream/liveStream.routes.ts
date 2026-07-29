@@ -36,7 +36,7 @@ router.get(
   auth(UserRole.Brand),
   liveStreamControllers.myLiveOverview,
 );
-router.get("/", liveStreamControllers.getAllLiveStreams);
+router.get("/", auth(), liveStreamControllers.getAllLiveStreams);
 router.get("/:id", auth(), liveStreamControllers.getLiveStreamById);
 router.patch(
   "/:id",

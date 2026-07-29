@@ -363,11 +363,11 @@ const flashDrops = async (query: any) => {
   };
 };
 
-const trendingInvest = async (query: any) => {
+const trendingInvest = async (query: any, userId: string) => {
   const { page, limit, skip } = paginationHelper(query);
 
   const products = await prisma.product.findMany({
-    where: { totalStock: { gt: 0 } },
+    where: { totalStock: { gt: 0 }, NOT: { userId } },
     select: {
       id: true,
       productName: true,
@@ -406,11 +406,11 @@ const trendingInvest = async (query: any) => {
   };
 };
 
-const youthPriceDeals = async (query: any) => {
+const youthPriceDeals = async (query: any, userId: string) => {
   const { page, limit, skip } = paginationHelper(query);
 
   const products = await prisma.product.findMany({
-    where: { totalStock: { gt: 0 } },
+    where: { totalStock: { gt: 0 } , NOT: { userId } },
     select: {
       id: true,
       productName: true,
@@ -449,7 +449,7 @@ const youthPriceDeals = async (query: any) => {
   };
 };
 
-const getAllProducts = async (query: any) => {
+const getAllProducts = async (query: any, userId: string) => {
   const { page, limit, skip, search } = paginationHelper(query);
   const { categoryId, rating, min_price, max_price, sortby } = query;
   const catObjectId =
@@ -457,7 +457,7 @@ const getAllProducts = async (query: any) => {
       ? new ObjectId(categoryId)
       : null;
 
-  const whereClause: any = { totalStock: { gt: 0 } };
+  const whereClause: any = { totalStock: { gt: 0 }, NOT: { userId } };
   if (search) {
     whereClause.productName = { contains: search, mode: "insensitive" };
   }

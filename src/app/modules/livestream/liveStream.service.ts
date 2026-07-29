@@ -75,11 +75,11 @@ const myLiveOverview = async (userId: string) => {
   };
 };
 
-const liveNow = async (query: any) => {
+const liveNow = async (query: any, userId: string) => {
   const { page, limit, skip } = paginationHelper(query);
 
   const liveStreams = await prisma.liveStream.findMany({
-    where: { isLive: true, isCompleted: false },
+    where: { isLive: true, isCompleted: false, NOT: { userId } },
     orderBy: { createdAt: "desc" },
     include: {
       user: {
@@ -174,9 +174,10 @@ const myPastLives = async (userId: string) => {
   };
 };
 
-const getAllLiveStreams = async () => {
+const getAllLiveStreams = async (userId: string) => {
   const results = await prisma.liveStream.findMany({
-    omit: { isCompleted: true },
+    where: { NOT: { userId }, isCompleted: false },
+    // omit: { isCompleted: true },
   });
   return results;
 };

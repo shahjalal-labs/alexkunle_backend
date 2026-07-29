@@ -307,7 +307,7 @@ const getMyAffiliatesFromDB = async (userId: string) => {
 const switchUserRole = async (userId: string) => {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    select: { id: true, role: true, businesses: true },
+    select: { id: true, role: true, businesses: true, isSetupCompleted: true },
   });
 
   await prisma.user.update({
@@ -327,6 +327,7 @@ const switchUserRole = async (userId: string) => {
     id: user.id,
     role: user.role === "Buyer" ? "Brand" : "Buyer",
     accessToken,
+    isSetupCompleted: user.isSetupCompleted,
     isBrandProfileCompleted: user.businesses.length > 0 ? true : false,
   };
 };

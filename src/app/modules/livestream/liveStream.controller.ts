@@ -66,7 +66,7 @@ const myPastLives = catchAsync(async (req, res) => {
 });
 
 const liveNow = catchAsync(async (req, res) => {
-  const result = await liveStreamServices.liveNow(req.query);
+  const result = await liveStreamServices.liveNow(req.query, req.user.id);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -76,7 +76,7 @@ const liveNow = catchAsync(async (req, res) => {
 });
 
 const getAllLiveStreams = catchAsync(async (req, res) => {
-  const result = await liveStreamServices.getAllLiveStreams();
+  const result = await liveStreamServices.getAllLiveStreams(req.user.id);
   sendResponse(res, {
     success: true,
     statusCode: 200,

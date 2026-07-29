@@ -55,7 +55,7 @@ const brandOverview = catchAsync(async (req, res) => {
 });
 
 const getAllProducts = catchAsync(async (req, res) => {
-  const result = await productServices.getAllProducts(req.query);
+  const result = await productServices.getAllProducts(req.query, req.user.id);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -125,7 +125,7 @@ const flashDrops = catchAsync(async (req, res) => {
 });
 
 const trendingInvest = catchAsync(async (req, res) => {
-  const result = await productServices.trendingInvest(req.query);
+  const result = await productServices.trendingInvest(req.query, req.user.id);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -135,7 +135,7 @@ const trendingInvest = catchAsync(async (req, res) => {
 });
 
 const youthPriceDeals = catchAsync(async (req, res) => {
-  const result = await productServices.youthPriceDeals(req.query);
+  const result = await productServices.youthPriceDeals(req.query, req.user.id);
   sendResponse(res, {
     success: true,
     statusCode: 200,

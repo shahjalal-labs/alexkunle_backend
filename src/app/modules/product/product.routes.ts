@@ -14,7 +14,7 @@ router.post(
   parseBodyData,
   productControllers.createProduct,
 );
-router.get("/all-products", productControllers.getAllProducts);
+router.get("/all-products", auth(), productControllers.getAllProducts);
 router.get("/my-products", auth(UserRole.Brand), productControllers.myProducts);
 router.get(
   "/brand-overview",
@@ -28,8 +28,8 @@ router.get(
 router.get("/single-product/:id", auth(), productControllers.getProductById);
 router.get("/product-view/:id", auth(), productControllers.productViewById);
 router.get("/flash-drops", productControllers.flashDrops);
-router.get("/trending-investments", productControllers.trendingInvest);
-router.get("/youth-price-deals", productControllers.youthPriceDeals);
+router.get("/trending-investments", auth(), productControllers.trendingInvest);
+router.get("/youth-price-deals", auth(), productControllers.youthPriceDeals);
 router.patch(
   "/:id",
   auth(UserRole.Brand),
