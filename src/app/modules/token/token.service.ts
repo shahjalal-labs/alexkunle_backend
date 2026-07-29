@@ -7,21 +7,73 @@ import {
 import { createStripePaymentIntent } from "../../../helpers/stripe.helper";
 import prisma from "../../../shared/prisma";
 
+// const buyToken = async (userId: string, payload: any) => {
+//   const user = await prisma.user.findUniqueOrThrow({
+//     where: { id: userId },
+//   });
+
+//   const spinSetting = await prisma.spinSetting.findFirst({
+//     select: {
+//       perDollarToken: true,
+//     },
+//   });
+
+//   const paymentIntent = await createStripePaymentIntent(
+//     user.id,
+//     payload.paymentMethodId,
+//     payload.amount * 100,
+//   );
+
+//   if (paymentIntent.status !== "succeeded") {
+//     throw new ApiError(400, "Payment failed. Please try again.");
+//   }
+
+//   await prisma.$transaction(async (tx) => {
+//     await tx.tokenTransaction.create({
+//       data: {
+//         userId,
+//         transactionType: "Purchase",
+//         amount: payload.amount,
+//         token: payload.amount * spinSetting?.perDollarToken!,
+//         title: `Bought tokens`,
+//       },
+//     });
+
+//     await tx.user.update({
+//       where: { id: userId },
+//       data: {
+//         tokens: {
+//           increment: payload.amount * spinSetting?.perDollarToken!,
+//         },
+//       },
+//     });
+//   });
+
+//   return;
+// };
+
 const buyToken = async (userId: string, payload: any) => {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
   });
 
-  const spinSetting = await prisma.spinSetting.findFirst({
-    select: {
-      perDollarToken: true,
-    },
-  });
+  if (
+    payload.tokenAmount !== 50 &&
+    payload.tokenAmount !== 100 &&
+    payload.tokenAmount !== 500
+  ) {
+    throw new Error(
+      "Invalid token amount. Only 50, 100, or 500 tokens can be purchased.",
+    );
+  }
+
+  const tokenAmount =
+    payload.tokenAmount == 50 ? 5 : payload.tokenAmount == 100 ? 10 : 45;
 
   const paymentIntent = await createStripePaymentIntent(
     user.id,
     payload.paymentMethodId,
-    payload.amount * 100,
+    tokenAmount,
   );
 
   if (paymentIntent.status !== "succeeded") {
@@ -33,8 +85,13 @@ const buyToken = async (userId: string, payload: any) => {
       data: {
         userId,
         transactionType: "Purchase",
-        amount: payload.amount,
-        token: payload.amount * spinSetting?.perDollarToken!,
+        amount: paymentIntent.amount / 100,
+        token:
+          payload.tokenAmount == 50
+            ? 50
+            : payload.tokenAmount == 100
+              ? 110
+              : 575,
         title: `Bought tokens`,
       },
     });
@@ -43,7 +100,12 @@ const buyToken = async (userId: string, payload: any) => {
       where: { id: userId },
       data: {
         tokens: {
-          increment: payload.amount * spinSetting?.perDollarToken!,
+          increment:
+            payload.tokenAmount == 50
+              ? 50
+              : payload.tokenAmount == 100
+                ? 110
+                : 575,
         },
       },
     });
@@ -51,6 +113,7 @@ const buyToken = async (userId: string, payload: any) => {
 
   return;
 };
+
 
 const getMyTokenHistory = async (userId: string) => {
   const availableToken = await prisma.user.findUniqueOrThrow({
