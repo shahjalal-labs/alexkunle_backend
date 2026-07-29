@@ -163,6 +163,39 @@ const getAllReviewsForProduct = catchAsync(async (req, res) => {
   });
 });
 
+
+
+//guest
+const trendingInvestGuest = catchAsync(async (req, res) => {
+  const result = await productServices.trendingInvestGuest(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Trending investments has been retrieved successfully",
+    data: result,
+  });
+});
+
+const youthPriceDealsGuest = catchAsync(async (req, res) => {
+  const result = await productServices.youthPriceDealsGuest(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Youth price deals has been retrieved successfully",
+    data: result,
+  });
+});
+
+const getAllProductsGuest = catchAsync(async (req, res) => {
+  const result = await productServices.getAllProductsGuest(req.query);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "All products has been retrived successfully",
+    data: result,
+  });
+});
+
 export const productControllers = {
   createProduct,
   myProducts,
@@ -178,4 +211,7 @@ export const productControllers = {
   getFeaturedProducts,
   getAllReviewsForProduct,
   priceOverview,
+  getAllProductsGuest,
+  trendingInvestGuest,
+  youthPriceDealsGuest,
 };

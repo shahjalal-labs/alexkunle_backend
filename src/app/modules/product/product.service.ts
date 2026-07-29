@@ -823,6 +823,159 @@ const getPriceTrendOverviewForProduct = async (productId: string) => {
   };
 };
 
+
+const trendingInvestGuest = async (query: any) => {
+  const { page, limit, skip } = paginationHelper(query);
+
+  const products = await prisma.product.findMany({
+    where: { totalStock: { gt: 0 } },
+    select: {
+      id: true,
+      productName: true,
+      price: true,
+      productImages: true,
+      rating: true,
+      reviews: true,
+      youthPrice: true,
+      investIncrease: true,
+      totalStock: true,
+      description: true,
+      category: {
+        select: {
+          id: true,
+          categoryName: true,
+        },
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: { createdAt: "desc" },
+  });
+
+  const total = await prisma.product.count({
+    where: { totalStock: { gt: 0 } },
+  });
+
+  return {
+    meta: {
+      total,
+      currentPage: page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+    products,
+  };
+};
+
+const youthPriceDealsGuest = async (query: any) => {
+  const { page, limit, skip } = paginationHelper(query);
+
+  const products = await prisma.product.findMany({
+    where: { totalStock: { gt: 0 }},
+    select: {
+      id: true,
+      productName: true,
+      price: true,
+      productImages: true,
+      rating: true,
+      reviews: true,
+      youthPrice: true,
+      investIncrease: true,
+      totalStock: true,
+      description: true,
+      category: {
+        select: {
+          id: true,
+          categoryName: true,
+        },
+      },
+    },
+    skip,
+    take: limit,
+    orderBy: { createdAt: "desc" },
+  });
+
+  const total = await prisma.product.count({
+    where: { totalStock: { gt: 0 } },
+  });
+
+  return {
+    meta: {
+      total,
+      currentPage: page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+    products,
+  };
+};
+
+const getAllProductsGuest = async (query: any) => {
+  const { page, limit, skip, search } = paginationHelper(query);
+  const { categoryId, rating, min_price, max_price, sortby } = query;
+  const catObjectId =
+    categoryId && ObjectId.isValid(categoryId)
+      ? new ObjectId(categoryId)
+      : null;
+
+  const whereClause: any = { totalStock: { gt: 0 }};
+  if (search) {
+    whereClause.productName = { contains: search, mode: "insensitive" };
+  }
+  if (catObjectId) {
+    whereClause.categoryId = catObjectId;
+  }
+  if (rating) {
+    whereClause.rating = { gte: parseFloat(rating) };
+  }
+  if (min_price) {
+    whereClause.price = { ...whereClause.price, gte: parseFloat(min_price) };
+  }
+  if (max_price) {
+    whereClause.price = { ...whereClause.price, lte: parseFloat(max_price) };
+  }
+
+  const products = await prisma.product.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      productName: true,
+      productImages: true,
+      productVideos: true,
+      description: true,
+      rating: true,
+      category: {
+        select: {
+          id: true,
+          categoryName: true,
+        },
+      },
+      totalStock: true,
+      price: true,
+    },
+    orderBy:
+      sortby === "asc" || sortby === "desc"
+        ? { productName: sortby }
+        : { createdAt: sortby === "recent" ? "desc" : undefined },
+    skip,
+    take: limit,
+  });
+
+  const total = await prisma.product.count({ where: whereClause });
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    meta: {
+      total,
+      currentPage: page,
+      limit,
+      totalPages,
+    },
+    products,
+  };
+};
+
+
 export const productServices = {
   createProduct,
   editProduct,
@@ -838,4 +991,7 @@ export const productServices = {
   getFeaturedProducts,
   getAllReviewsForProduct,
   getPriceTrendOverviewForProduct,
+  trendingInvestGuest,
+  youthPriceDealsGuest,
+  getAllProductsGuest,
 };

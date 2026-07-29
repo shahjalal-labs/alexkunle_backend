@@ -30,6 +30,14 @@ router.get("/product-view/:id", auth(), productControllers.productViewById);
 router.get("/flash-drops", productControllers.flashDrops);
 router.get("/trending-investments", auth(), productControllers.trendingInvest);
 router.get("/youth-price-deals", auth(), productControllers.youthPriceDeals);
+
+//guest
+
+router.get("/trending-investments-guest", productControllers.trendingInvestGuest);
+router.get("/youth-price-deals-guest", productControllers.youthPriceDealsGuest);
+router.get("/all-products-guest", productControllers.getAllProductsGuest);
+//guest end
+
 router.patch(
   "/:id",
   auth(UserRole.Brand),
