@@ -127,7 +127,7 @@ router.put(
 
 router.get(
   "/spin-system",
-  auth(UserRole.Admin),  
+  // auth(UserRole.Admin),  
   adminController.getCurrentSpinSystem,
 );
 router.post(

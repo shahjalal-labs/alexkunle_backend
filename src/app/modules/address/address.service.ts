@@ -50,6 +50,7 @@ const getUserDeliveryAddresses = async (userId: string) => {
   const address = await prisma.deliveryAddress.findMany({
     where: {
       userId,
+      isCampusAddress: false,
     },
     select: {
       id: true,
@@ -65,7 +66,94 @@ const getUserDeliveryAddresses = async (userId: string) => {
   return address;
 };
 
+const createCampusAddress = async (
+  userId: string,
+  payload: DeliveryAddress,
+) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+    },
+  });
+
+  await prisma.deliveryAddress.create({
+    data: {
+      userId,
+      city: payload.city,
+      country: payload.country,
+      postCode: payload.postCode,
+      street: payload.street,
+      fullName: payload.fullName,
+      houseNo: payload.houseNo,
+      phoneNumber: payload.phoneNumber,
+      toNeighbor: false,
+      isCampusAddress: true,
+    },
+  });
+
+  return;
+};
+
+const getBrandPickupAddress = async (userId: string) => {
+  await prisma.user.findUniqueOrThrow({
+    where: {
+      id: userId,
+      role: "Brand",
+    },
+  });
+
+  const address = await prisma.deliveryAddress.findMany({
+    where: {
+      userId,
+      isCampusAddress: true,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      houseNo: true,
+      street: true,
+      city: true,
+      country: true,
+      phoneNumber: true,
+    },
+  });
+
+  return address;
+};
+
+const updatePickupAddress = async (payload: any) => {
+  const address = await prisma.deliveryAddress.findUnique({
+    where: {
+      id: payload.addressId,
+      isCampusAddress: true,
+    },
+  });
+
+  if (!address) {
+    throw new ApiError(404, "Pickup address not found");
+  }
+
+  await prisma.deliveryAddress.update({
+    where: {
+      id: payload.addressId,
+    },
+    data: {
+      fullName: payload.fullName || address.fullName,
+      houseNo: payload.houseNo || address.houseNo,
+      street: payload.street || address.street,
+      city: payload.city || address.city,
+      country: payload.country || address.country,
+      phoneNumber: payload.phoneNumber || address.phoneNumber,
+    },
+  });
+
+  return;
+};
+
 export const addressService = {
   createNewDeliveryAddress,
   getUserDeliveryAddresses,
+  createCampusAddress,
+  getBrandPickupAddress,
+  updatePickupAddress,
 };

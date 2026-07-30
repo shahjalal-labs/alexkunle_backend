@@ -19,4 +19,23 @@ router.get(
   addressController.getUserDeliveryAddresses,
 );
 
+router.post(
+  "/pickup",
+  auth(UserRole.Brand),
+  // validateRequest(addressValidation.addressValidationSchema),
+  addressController.createCampusAddress,
+);
+
+router.get(
+  "/pickup",
+  auth(UserRole.Brand),
+  addressController.getBrandPickupAddress,
+);
+
+router.put(
+  "/pickup-update",
+  auth(UserRole.Brand),
+  addressController.updatePickupAddress,
+);
+
 export const addressRoute = router;

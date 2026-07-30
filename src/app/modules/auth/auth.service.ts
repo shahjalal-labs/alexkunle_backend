@@ -300,10 +300,18 @@ const myProfile = async (userId: string) => {
   const brandProfileCompleted =
     user.businesses && user.gender && user.profileImage ? true : false;
 
+  const isPickUpaddressExists = await prisma.deliveryAddress.findFirst({
+    where: {
+      userId: userId,
+      isCampusAddress: true,
+    },
+  });
+
   const returnUser = {
     ...user,
     isSetupCompleted: buyerProfileCompleted,
     isBrandProfileCompleted: brandProfileCompleted,
+    isPickUpaddressExists: isPickUpaddressExists ? true : false,
   };
 
   return returnUser;

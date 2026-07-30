@@ -17,7 +17,7 @@ type OrderItemInput = {
 };
 
 type CreateOrderInput = {
-  shippingAddressId: string;
+  shippingAddressId?: string;
   isUsingWallet?: boolean;
   paymentMethodId?: string;
   items?: OrderItemInput[];
@@ -27,6 +27,7 @@ const toNumber = (value: unknown) => {
   const parsedValue = Number(value);
   return Number.isNaN(parsedValue) ? 0 : parsedValue;
 };
+
 const createNewOrderInDB = async (
   userId: string,
   orderData: CreateOrderInput,
@@ -46,13 +47,6 @@ const createNewOrderInDB = async (
   if (cartIds.length === 0) {
     throw new ApiError(400, "cart Ids must contain at least one cart id");
   }
-
-  await prisma.deliveryAddress.findFirstOrThrow({
-    where: {
-      id: orderData.shippingAddressId,
-      userId: user.id,
-    },
-  });
 
   const carts = await prisma.cart.findMany({
     where: {
@@ -86,6 +80,34 @@ const createNewOrderInDB = async (
       "Some cart ids are invalid or do not belong to this user",
     );
   }
+
+  // await prisma.deliveryAddress.findFirst({
+  //   where: {
+  //     id: orderData.shippingAddressId,
+  //     userId: user.id,
+  //   },
+  // });
+
+  const productIds = carts.map((cart) => cart.product.id);
+
+  const product = await prisma.product.findUniqueOrThrow({
+    where: {
+      id: productIds[0],
+    },
+  });
+
+  const pickupAddress = await prisma.deliveryAddress.findFirst({
+    where: {
+      userId: product.userId,
+      isCampusAddress: true,
+    },
+  });
+
+  if (!pickupAddress && !orderData.shippingAddressId) {
+    throw new ApiError(400, "This brand does not have a pickup address. Please contact the brand");
+  }
+
+  const shippingAddressId = orderData.shippingAddressId ?? pickupAddress!.id;
 
   const normalizedItems = carts.map((cart) => {
     const quantity = toNumber(cart.quantity);
@@ -179,7 +201,7 @@ const createNewOrderInDB = async (
         stripePaymentIntentId,
         orderId: generateOrderId(),
         paymentMethodId,
-        shippingAddressId: orderData.shippingAddressId,
+        shippingAddressId: shippingAddressId,
       },
       select: {
         id: true,
@@ -545,13 +567,6 @@ const createDirectOrderWithoutCart = async (userId: string, payload: any) => {
     throw new ApiError(400, "You cannot use your own referral code");
   }
 
-  await prisma.deliveryAddress.findFirstOrThrow({
-    where: {
-      id: payload.shippingAddressId,
-      userId: user.id,
-    },
-  });
-
   const product = await prisma.product.findUniqueOrThrow({
     where: {
       id: payload.productId,
@@ -560,6 +575,20 @@ const createDirectOrderWithoutCart = async (userId: string, payload: any) => {
       variants: true,
     },
   });
+
+  const pickupAddress = await prisma.deliveryAddress.findFirst({
+    where: {
+      userId: product.userId,
+      isCampusAddress: true,
+    },
+  });
+
+  // await prisma.deliveryAddress.findFirstOrThrow({
+  //   where: {
+  //     id: payload.shippingAddressId,
+  //     userId: user.id,
+  //   },
+  // });
 
   if (payload.quantity <= 0) {
     throw new ApiError(400, "Item quantity must be greater than 0");
@@ -647,7 +676,9 @@ const createDirectOrderWithoutCart = async (userId: string, payload: any) => {
         stripePaymentIntentId,
         orderId: generateOrderId(),
         paymentMethodId,
-        shippingAddressId: payload.shippingAddressId,
+        shippingAddressId: payload.shippingAddressId
+          ? payload.shippingAddressId
+          : pickupAddress?.id,
       },
     });
 
@@ -715,13 +746,13 @@ const getBrandWiseOrderItems = async (userId: string) => {
     select: {
       id: true,
       trackingId: true,
-      quantity: true,      
+      quantity: true,
       status: true,
       product: {
         select: {
           productImages: true,
           productName: true,
-          price: true,          
+          price: true,
           user: {
             select: {
               fullName: true,

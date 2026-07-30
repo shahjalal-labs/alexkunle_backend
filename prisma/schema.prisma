@@ -13,7 +13,7 @@ model PendingUser {
   email       String   @unique
   phoneNumber String   @unique
   countryCode String
-  password    String  
+  password    String
   createdAt   DateTime @default(now())
 
   @@map("pending_users")
@@ -37,7 +37,7 @@ model User {
   wallet            Int                @default(0)
   tokens            Int                @default(0)
   lastLogin         DateTime?
-  isSetupCompleted       Boolean            @default(false)
+  isSetupCompleted  Boolean            @default(false)
   canTransfer       Boolean?           @default(true)
   role              UserRole           @default(Buyer)
   status            UserStatus         @default(Active)
@@ -276,7 +276,7 @@ model LiveStream {
   views          Int       @default(0)
   streamDuration Int       @default(0) // Duration in seconds
   createdAt      DateTime  @default(now())
-  isCompleted Boolean @default(false)
+  isCompleted    Boolean   @default(false)
   updatedAt      DateTime  @updatedAt
   user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category       Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -319,23 +319,24 @@ model Message {
 }
 
 model DeliveryAddress {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  fullName      String
-  phoneNumber   String
-  postCode      String
-  houseNo       String
-  street        String
-  city          String
-  country       String
-  toNeighbor    Boolean  @default(false)
-  neighborName  String?
-  neighborPhone String?
-  neighborHouse String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders        Order[]
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @db.ObjectId
+  fullName        String
+  phoneNumber     String
+  postCode        String
+  houseNo         String
+  street          String
+  city            String
+  country         String
+  toNeighbor      Boolean  @default(false)
+  neighborName    String?
+  neighborPhone   String?
+  neighborHouse   String?
+  isCampusAddress Boolean?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders          Order[]
 
   @@map("delivery_addresses")
 }
@@ -530,14 +531,14 @@ model PointSetting {
 }
 
 model SpinSetting {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  spinCost     Float?
-  minimumToken Float?
-  dailyLimit   Float?
-  fraud        Boolean?
-    perDollarToken Float?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  spinCost       Float?
+  minimumToken   Float?
+  dailyLimit     Float?
+  fraud          Boolean?
+  perDollarToken Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("spinSettings")
 }
