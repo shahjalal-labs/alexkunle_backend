@@ -33,6 +33,7 @@ const createNewDeliveryAddress = async (
       neighborName: payload.neighborName,
       neighborPhone: payload.neighborPhone,
       neighborHouse: payload.neighborHouse,
+      isCampusAddress: false,
     },
   });
 
