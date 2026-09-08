@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "main-server",
+      name: "alexkunle_server",
       script: "./dist/server.js",
       watch: false,
       env: {
@@ -9,7 +9,7 @@ module.exports = {
       },
     },
     {
-      name: "email-worker",
+      name: "alexkunle_email_worker",
       script: "./dist/workers/emailWorker.js",
       watch: false,
       env: {
