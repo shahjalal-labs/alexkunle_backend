@@ -1,4 +1,4 @@
-# ⚡ Alex Kunle Engine — High-Velocity Order Autopilot & Inventory API
+# 📺 Alex Kunle — Live Stream Commerce, Real-Time Bidding Auctions & Ad Campaign Engine
 
 ![Architecture Banner](./assets/banner.svg)
 
@@ -17,7 +17,8 @@
   <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express" />
   <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
-  <img src="https://img.shields.io/badge/Autopilot-F59E0B?style=for-the-badge&logo=zap&logoColor=white" alt="Autopilot" />
+  <img src="https://img.shields.io/badge/Live_Commerce-F97316?style=for-the-badge&logo=youtube&logoColor=white" alt="Live_Commerce" />
+  <img src="https://img.shields.io/badge/Auctions-8B5CF6?style=for-the-badge&logo=dollar-sign&logoColor=white" alt="Auctions" />
   
 </p>
 
@@ -25,17 +26,17 @@
 
 ## 📌 Executive Overview
 
-Alex Kunle Backend is a high-performance operational engine providing automated stock level reordering, order fulfillment autopilot workflows, multi-channel product shortlisting, and real-time inventory tracking.
+**Alex Kunle Backend** is a next-generation interactive live commerce and digital auction platform engine. Engineered with **Node.js, TypeScript, Express, and Prisma ORM**, the system powers modern creator commerce: **interactive live shopping broadcasts**, **real-time competitive product bidding auctions**, merchant **ad campaign management** (Brand Awareness, Traffic, Conversions) with placement targeting, tokenized wallet transactions, and automated order autopilot fulfillment.
 
 ---
 
-## 🚀 Key Architectural Highlights
+## 🚀 Key Architectural & Domain Capabilities
 
-- **Order Autopilot**: Automated rule-based routing of incoming orders to fulfillment queues.
-- **Dynamic Stock Sync**: Real-time stock reservation preventing inventory collisions across channels.
-- **Shortlisting Engine**: Fast product bookmarking and curated collections for enterprise buyers.
-- **Multi-Tenant Architecture**: Segregated vendor inventories and automated order dispatch.
-- **Defensive Input Validation**: Zod schema enforcement across all 17 feature endpoints.
+- **Interactive Live Stream Shopping**: Broadcaster live streams (`LiveStream`) with linked product showcases and real-time chat rooms.
+- **Competitive Bidding Auction Engine**: Timed auctions (`Auction`) with incrementing bid validations (`Bid`), anti-sniping logic, and winner determination.
+- **Merchant Ad Campaign Manager**: Create sponsored merchant campaigns (`Campaign`) specifying budgets, durations, and targeted feed placements.
+- **Order Autopilot & Inventory Sync**: Automated fulfillment routing queues and inventory locking across concurrent live purchase streams.
+- **Token Wallet & Point Economy**: In-app wallet ledger supporting token purchases, rewards, transfers, and seller balance cash-outs.
 
 ---
 
@@ -44,17 +45,18 @@ Alex Kunle Backend is a high-performance operational engine providing automated 
 The complete REST API specification is published in our public Postman showcase workspace:
 
 * 🌐 **Instant Live API Documentation**: [Explore alexkunle_backend in Postman (Instant Web View)](https://www.postman.com/shahjalal-backend-9458759/shahjalal-api-portfolio/collection/48491387-e9b01561-25f5-4221-9e30-6ac337c8a1c5)
-* 📁 **Local Postman File**: [`docs/postman_collection.json`](./docs/postman_collection.json) (import directly into Postman Desktop or Newman CLI).
+* 📁 **Local Postman File**: [`docs/postman_collection.json`](./docs/postman_collection.json) (ready for Postman Desktop or Newman CLI).
 
 ### Core Endpoint Modules
 
 | Module | Base Route | Key Capabilities |
 |---|---|---|
-| **Autopilot** | `/api/v1/autopilot` | Automated fulfillment triggers, rule-based dispatching |
-| **Stock** | `/api/v1/stock` | Inventory tracking, low-stock threshold alerts, replenishment |
-| **Orders** | `/api/v1/order` | Order lifecycle state machine, status notifications |
-| **Products** | `/api/v1/product` | Catalog management, SKU generation, categorization |
-| **Shortlists** | `/api/v1/shortlist` | Curated product sets and buyer procurement lists |
+| **Authentication** | `/api/v1/auth` | Creator and buyer onboarding, referral code reward tracking, JWT security |
+| **Live Streams** | `/api/v1/livestream` | Broadcast scheduling, product tag pinning, live session metrics |
+| **Auctions & Bidding** | `/api/v1/auction` | Create timed auctions, place real-time bids, auction settlement |
+| **Ad Campaigns** | `/api/v1/campaign` | Sponsor listing campaigns, objective configuration, budget tracking |
+| **Catalog & Products** | `/api/v1/product` | Product SKUs, variations, inventory counts, merchant collections |
+| **Token & Wallet** | `/api/v1/wallet` | Token balance ledger, top-up transactions, seller withdrawal requests |
 
 ---
 
@@ -63,18 +65,18 @@ The complete REST API specification is published in our public Postman showcase 
 ```plaintext
 alexkunle_backend/
 ├── assets/
-│   └── banner.svg               # Project architecture visual banner
+│   └── banner.svg               # Architectural visual banner
 ├── docs/
 │   └── postman_collection.json  # Full Postman API collection v2.1
 ├── src/
 │   ├── app/
 │   │   ├── middlewares/         # Global error handlers, auth & validation guards
-│   │   ├── modules/             # Domain-driven feature modules
-│   │   └── routes/              # Centralized route aggregator
+│   │   ├── modules/             # Domain feature modules
+│   │   └── routes/              # Centralized route registration
 │   ├── config/                  # Environment & external service configurations
-│   └── server.ts                # Application bootstrapper & HTTP server
+│   └── server.ts                # Application bootstrapper
 ├── prisma/
-│   └── schema.prisma            # Database schema definition
+│   └── schema.prisma            # Prisma database schema definition
 ├── .env.example                 # Sanitized environment template
 ├── package.json
 └── tsconfig.json
@@ -95,13 +97,12 @@ cd alexkunle_backend
 npm install
 ```
 
-### 2. Environment Configuration
-Copy the provided `.env.example` file to create your local `.env`:
+### 2. Configure Environment Variables
 ```bash
 cp .env.example .env
 ```
 
-### 3. Initialize Prisma Client
+### 3. Generate Prisma Client
 ```bash
 npx prisma generate
 ```
@@ -115,7 +116,7 @@ npm run dev
 
 ## 👨‍💻 Engineering & Authorship
 
-Developed and maintained by **Md. Shahjalal**.
+Developed and engineered by **Md. Shahjalal**.
 
 * **GitHub**: [@shahjalal-labs](https://github.com/shahjalal-labs)
 * **Email**: [muhommodshahjalal@gmail.com](mailto:muhommodshahjalal@gmail.com)
